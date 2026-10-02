@@ -1,140 +1,212 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ app_name }}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            paper: "#F3E4C9",
-            bone: "#F8EFD9",
-            ink: "#8A5F41",
-            mute: "#A77F60",
-            line: "#D8C49E",
-            clay: "#8A5F41",
-            "clay-tint": "#EAD8BB",
-          },
-          fontFamily: {
-            display: ['"Bricolage Grotesque"', "sans-serif"],
-            sans: ['"Hanken Grotesk"', "system-ui", "sans-serif"],
-            mono: ['"IBM Plex Mono"', "monospace"],
-          },
-        },
-      },
-    };
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;500;600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/styles.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%238A5F41'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Georgia' font-size='17' fill='%23F3E4C9'%3ES%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%232563EB'/%3E%3Cpath d='M5.5 16c2.7-4.4 6.2-6.6 10.5-6.6S23.8 11.6 26.5 16c-2.7 4.4-6.2 6.6-10.5 6.6S8.2 20.4 5.5 16Z' fill='%23fff'/%3E%3Ccircle cx='16' cy='16' r='4.3' fill='%2314B8A6'/%3E%3Ccircle cx='16' cy='16' r='1.9' fill='%230B3B8C'/%3E%3C/svg%3E" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("okfbench_theme");
+        if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
-  <div class="grain" aria-hidden="true"></div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></symbol>
+    <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 3.5 12.9 8.6 18 10.5l-5.1 1.9L11 17.5l-1.9-5.1L4 10.5l5.1-1.9Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  </svg>
 
-  <header class="site-nav">
-    <div class="site-nav-inner">
-      <div>
-        <h1 class="site-title">{{ app_name }}</h1>
-        <p class="site-sub">Fictional Infant Guard knowledge. OKF concepts vs BM25 corpus RAG.</p>
+  <div class="app" id="app">
+    <aside class="side" id="side" aria-label="Main navigation">
+      <div class="side-head">
+        <div class="brand-slot">
+          <button type="button" class="icon-btn expand-btn" id="expandBtn" aria-label="Expand sidebar">
+            <svg class="i" aria-hidden="true"><use href="#i-panel"/></svg>
+          </button>
+          <a class="brand" href="/" aria-label="{{ app_name }} home">
+            <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+              <rect width="32" height="32" rx="10" fill="#2563EB"/>
+              <path d="M5.5 16c2.7-4.4 6.2-6.6 10.5-6.6S23.8 11.6 26.5 16c-2.7 4.4-6.2 6.6-10.5 6.6S8.2 20.4 5.5 16Z" fill="#fff"/>
+              <circle cx="16" cy="16" r="4.3" fill="#14B8A6"/>
+              <circle cx="16" cy="16" r="1.9" fill="#0B3B8C"/>
+            </svg>
+            <span class="brand-name">{{ app_name }}</span>
+          </a>
+        </div>
+        <button type="button" class="icon-btn collapse-btn" id="collapseBtn" aria-label="Collapse sidebar">
+          <svg class="i" aria-hidden="true"><use href="#i-panel"/></svg>
+        </button>
       </div>
-      <div class="nav-badges">
-        <span class="badge">LLM: {{ llm_mode }}</span>
-        <a class="badge badge-fill badge-link" href="https://github.com/s4b11/okfbench">GitHub</a>
-      </div>
-    </div>
-  </header>
 
-  <main class="wrap">
-    <div class="maxw main-grid">
-      <!-- Chat column -->
-      <section class="stack-gap">
-        <div class="panel panel-pad">
-          <div class="controls-row">
-            <div class="mode-field flex-1" style="min-width: 160px;">
-              <span class="field-label" id="mode-label">Retrieval mode</span>
-              <input type="hidden" id="mode" value="okf" />
-              <div class="mode-select">
-                <button
-                  type="button"
-                  id="mode-toggle"
-                  class="select-mode mode-toggle"
-                  aria-haspopup="listbox"
-                  aria-expanded="false"
-                  aria-labelledby="mode-label mode-value"
-                >
-                  <span id="mode-value">OKF (concepts + multi-hop links)</span>
-                  <span class="mode-chevron" aria-hidden="true"></span>
-                </button>
-                <div id="mode-menu" class="mode-menu" role="listbox" aria-labelledby="mode-label">
-                  <button type="button" class="mode-option" role="option" data-mode-option="okf" aria-selected="true">OKF (concepts + multi-hop links)</button>
-                  <button type="button" class="mode-option" role="option" data-mode-option="vector" aria-selected="false">Vector-like (BM25 lexical corpus)</button>
-                  <button type="button" class="mode-option" role="option" data-mode-option="hybrid" aria-selected="false">Hybrid (OKF + BM25)</button>
-                </div>
-              </div>
-            </div>
-            <button type="button" id="clear-chat" class="btn btn-outline">Clear session</button>
+      <nav class="nav">
+        <div class="nav-group">
+          <p class="nav-label">Workspace</p>
+          <a href="/" aria-current="page">
+            <svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>
+            <span class="lbl">Chat</span>
+          </a>
+          <a class="side-link" href="https://github.com/s4b11/okfbench" target="_blank" rel="noopener">
+            <svg class="i" aria-hidden="true"><use href="#i-ext"/></svg>
+            <span class="lbl">GitHub</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="side-foot">
+        <button type="button" class="side-link theme-side" id="themeBtnSide" aria-label="Switch theme">
+          <svg class="i theme-ico-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="i theme-ico-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+          <span class="lbl">Theme</span>
+        </button>
+        <a class="account" href="https://sabithsb.fermyon.app/" target="_blank" rel="noopener">
+          <span class="avatar sm t-blue" aria-hidden="true">S</span>
+          <span class="acc-text"><b>Sabii</b><small>Created by</small></span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="scrim" id="scrim"></div>
+
+    <main class="main" id="main">
+      <div class="mobilebar">
+        <button type="button" class="icon-btn lg" id="menuBtn" aria-label="Open navigation" aria-expanded="false">
+          <svg class="i" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <a class="brand" href="/">
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="10" fill="#2563EB"/>
+            <path d="M5.5 16c2.7-4.4 6.2-6.6 10.5-6.6S23.8 11.6 26.5 16c-2.7 4.4-6.2 6.6-10.5 6.6S8.2 20.4 5.5 16Z" fill="#fff"/>
+            <circle cx="16" cy="16" r="4.3" fill="#14B8A6"/>
+            <circle cx="16" cy="16" r="1.9" fill="#0B3B8C"/>
+          </svg>
+          <span>{{ app_name }}</span>
+        </a>
+        <button type="button" class="icon-btn lg" id="themeBtnMobile" aria-label="Switch theme">
+          <svg class="i theme-ico-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="i theme-ico-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+
+      <header class="topbar">
+        <div class="page-head">
+          <div class="head-text">
+            <h1 class="page-title">{{ app_name }}</h1>
+            <p class="page-desc">Fictional Infant Guard knowledge. OKF concepts vs BM25 corpus RAG.</p>
           </div>
-          <p class="hint">
-            Ask the same question in each mode and compare latency, sources, and answer grounding.
-          </p>
+          <div class="head-actions">
+            <button type="button" class="icon-btn lg" id="themeBtn" aria-label="Switch theme">
+              <svg class="i theme-ico-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+              <svg class="i theme-ico-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+            </button>
+            <span class="badge t-info"><span class="dot"></span>LLM: {{ llm_mode }}</span>
+            <a class="btn secondary sm" href="https://github.com/s4b11/okfbench" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+      </header>
+
+      <div class="page">
+        <div class="main-grid">
+          <section class="stack-gap">
+            <div class="panel panel-pad">
+              <div class="controls-row">
+                <div class="mode-field flex-1">
+                  <span class="field-label" id="mode-label">Retrieval mode</span>
+                  <input type="hidden" id="mode" value="okf" />
+                  <div class="mode-select">
+                    <button
+                      type="button"
+                      id="mode-toggle"
+                      class="mode-toggle"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-labelledby="mode-label mode-value"
+                    >
+                      <span id="mode-value">OKF (concepts + multi-hop links)</span>
+                      <svg class="i chev" aria-hidden="true"><use href="#i-chev-down"/></svg>
+                    </button>
+                    <div id="mode-menu" class="mode-menu" role="listbox" aria-labelledby="mode-label" hidden>
+                      <button type="button" class="mode-option" role="option" data-mode-option="okf" aria-selected="true">OKF (concepts + multi-hop links)</button>
+                      <button type="button" class="mode-option" role="option" data-mode-option="vector" aria-selected="false">Vector-like (BM25 lexical corpus)</button>
+                      <button type="button" class="mode-option" role="option" data-mode-option="hybrid" aria-selected="false">Hybrid (OKF + BM25)</button>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" id="clear-chat" class="btn secondary sm">Clear session</button>
+              </div>
+              <p class="hint">
+                Ask the same question in each mode and compare latency, sources, and answer grounding.
+              </p>
+            </div>
+
+            <div id="messages" class="messages scroll-panel" aria-live="polite"></div>
+
+            <form id="chat-form" class="composer">
+              <input
+                id="question"
+                class="input-q"
+                type="text"
+                autocomplete="off"
+                placeholder="Ask about Infant Guard modules, vaccines, nutrition, risk alerts..."
+              />
+              <button type="submit" class="btn primary">Ask</button>
+            </form>
+            <p id="status" class="status-line">Ready</p>
+
+            <div>
+              <p class="section-label">Sample questions</p>
+              <div id="sample-questions" class="sample-list"></div>
+            </div>
+          </section>
+
+          <aside class="stack-gap">
+            <div class="panel panel-pad">
+              <h2 class="panel-head">Run metrics</h2>
+              <div id="metrics"><p class="empty-soft">No metrics yet.</p></div>
+            </div>
+
+            <div class="panel panel-pad">
+              <h2 class="panel-head">Retrieved sources</h2>
+              <div id="sources" class="sources-list scroll-panel"><p class="empty-soft">No sources.</p></div>
+            </div>
+
+            <div class="panel panel-pad">
+              <h2 class="panel-head">Recent runs</h2>
+              <div id="runs" class="runs-list scroll-panel"><p class="empty-soft">No runs logged yet.</p></div>
+            </div>
+
+            <div class="explainer">
+              <p><strong>OKF:</strong> concept pages with YAML frontmatter and explicit links. Retrieval scores concepts then expands multi-hop neighbors.</p>
+              <p><strong>Vector-like:</strong> BM25 over longer unstructured corpus docs. Free-tier friendly lexical baseline (not dense embeddings).</p>
+              <p><strong>Hybrid:</strong> interleaves OKF concepts and BM25 passages for the same question.</p>
+            </div>
+          </aside>
         </div>
 
-        <div id="messages" class="messages scroll-panel" aria-live="polite"></div>
-
-        <form id="chat-form" class="composer">
-          <input
-            id="question"
-            class="input-q"
-            type="text"
-            autocomplete="off"
-            placeholder="Ask about Infant Guard modules, vaccines, nutrition, risk alerts..."
-          />
-          <button type="submit" class="btn btn-fill">Ask</button>
-        </form>
-        <p id="status" class="status-line">Ready</p>
-
-        <div>
-          <p class="mono-label" style="margin-bottom: 0.55rem;">Sample questions</p>
-          <div id="sample-questions" class="sample-list"></div>
-        </div>
-      </section>
-
-      <!-- Side panels -->
-      <aside class="stack-gap">
-        <div class="panel panel-pad">
-          <h2 class="panel-head">Run metrics</h2>
-          <div id="metrics"><p class="empty-soft">No metrics yet.</p></div>
-        </div>
-
-        <div class="panel panel-pad">
-          <h2 class="panel-head">Retrieved sources</h2>
-          <div id="sources" class="sources-list scroll-panel"><p class="empty-soft">No sources.</p></div>
-        </div>
-
-        <div class="panel panel-pad">
-          <h2 class="panel-head">Recent runs</h2>
-          <div id="runs" class="runs-list scroll-panel"><p class="empty-soft">No runs logged yet.</p></div>
-        </div>
-
-        <div class="explainer">
-          <p><strong>OKF:</strong> concept pages with YAML frontmatter and explicit links. Retrieval scores concepts then expands multi-hop neighbors.</p>
-          <p><strong>Vector-like:</strong> BM25 over longer unstructured corpus docs. Free-tier friendly lexical baseline (not dense embeddings).</p>
-          <p><strong>Hybrid:</strong> interleaves OKF concepts and BM25 passages for the same question.</p>
-        </div>
-      </aside>
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="site-footer-inner">
-      Created by <a href="https://sabithsb.fermyon.app/" target="_blank" rel="noopener">Sabii</a>
-    </div>
-  </footer>
+        <footer class="site-footer">
+          Created by <a href="https://sabithsb.fermyon.app/" target="_blank" rel="noopener">Sabii</a>
+        </footer>
+      </div>
+    </main>
+  </div>
 
   <script src="/static/app.js"></script>
 </body>
