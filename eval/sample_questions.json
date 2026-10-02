@@ -1,0 +1,52 @@
+[
+  {
+    "id": "q1",
+    "question": "What is Infant Guard and which fictional hospital is the demo set in?",
+    "notes": "Overview grounding."
+  },
+  {
+    "id": "q2",
+    "question": "Which user roles exist and what can parents do in their workspace?",
+    "notes": "Multi-hop roles to parent workspace."
+  },
+  {
+    "id": "q3",
+    "question": "How do assistive nutrition drafts work and who must approve them before parents see them?",
+    "notes": "Clinician-in-the-loop."
+  },
+  {
+    "id": "q4",
+    "question": "When do growth and nutrition risk flags notify families and clinicians?",
+    "notes": "Threshold alerts."
+  },
+  {
+    "id": "q5",
+    "question": "Until what age does immunization scheduling run in the demo?",
+    "notes": "Age five."
+  },
+  {
+    "id": "q6",
+    "question": "Describe the three-tier architecture and what each tier does.",
+    "notes": "Presentation / app / data."
+  },
+  {
+    "id": "q7",
+    "question": "What clinic friction does the demo narrative try to reduce?",
+    "notes": "Before vs after."
+  },
+  {
+    "id": "q8",
+    "question": "List the seven modules and how nutrition connects to alerts.",
+    "notes": "Multi-hop modules."
+  },
+  {
+    "id": "q9",
+    "question": "How are visit confirmations and reminders delivered?",
+    "notes": "Dashboard + email-style notices."
+  },
+  {
+    "id": "q10",
+    "question": "What future enhancements are suggested for later demos?",
+    "notes": "Roadmap."
+  }
+]

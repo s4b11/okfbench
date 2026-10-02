@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ app_name }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: "#F3E4C9",
+            bone: "#F8EFD9",
+            ink: "#8A5F41",
+            mute: "#A77F60",
+            line: "#D8C49E",
+            clay: "#8A5F41",
+            "clay-tint": "#EAD8BB",
+          },
+          fontFamily: {
+            display: ['"Bricolage Grotesque"', "sans-serif"],
+            sans: ['"Hanken Grotesk"', "system-ui", "sans-serif"],
+            mono: ['"IBM Plex Mono"', "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;500;600;700;800&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%238A5F41'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Georgia' font-size='17' fill='%23F3E4C9'%3ES%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-nav">
+    <div class="site-nav-inner">
+      <div>
+        <h1 class="site-title">{{ app_name }}</h1>
+        <p class="site-sub">Fictional Infant Guard knowledge. OKF concepts vs BM25 corpus RAG.</p>
+      </div>
+      <div class="nav-badges">
+        <span class="badge">LLM: {{ llm_mode }}</span>
+        <a class="badge badge-fill badge-link" href="https://github.com/s4b11/okfbench">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="maxw main-grid">
+      <!-- Chat column -->
+      <section class="stack-gap">
+        <div class="panel panel-pad">
+          <div class="controls-row">
+            <div class="mode-field flex-1" style="min-width: 160px;">
+              <span class="field-label" id="mode-label">Retrieval mode</span>
+              <input type="hidden" id="mode" value="okf" />
+              <div class="mode-select">
+                <button
+                  type="button"
+                  id="mode-toggle"
+                  class="select-mode mode-toggle"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-labelledby="mode-label mode-value"
+                >
+                  <span id="mode-value">OKF (concepts + multi-hop links)</span>
+                  <span class="mode-chevron" aria-hidden="true"></span>
+                </button>
+                <div id="mode-menu" class="mode-menu" role="listbox" aria-labelledby="mode-label">
+                  <button type="button" class="mode-option" role="option" data-mode-option="okf" aria-selected="true">OKF (concepts + multi-hop links)</button>
+                  <button type="button" class="mode-option" role="option" data-mode-option="vector" aria-selected="false">Vector-like (BM25 lexical corpus)</button>
+                  <button type="button" class="mode-option" role="option" data-mode-option="hybrid" aria-selected="false">Hybrid (OKF + BM25)</button>
+                </div>
+              </div>
+            </div>
+            <button type="button" id="clear-chat" class="btn btn-outline">Clear session</button>
+          </div>
+          <p class="hint">
+            Ask the same question in each mode and compare latency, sources, and answer grounding.
+          </p>
+        </div>
+
+        <div id="messages" class="messages scroll-panel" aria-live="polite"></div>
+
+        <form id="chat-form" class="composer">
+          <input
+            id="question"
+            class="input-q"
+            type="text"
+            autocomplete="off"
+            placeholder="Ask about Infant Guard modules, vaccines, nutrition, risk alerts..."
+          />
+          <button type="submit" class="btn btn-fill">Ask</button>
+        </form>
+        <p id="status" class="status-line">Ready</p>
+
+        <div>
+          <p class="mono-label" style="margin-bottom: 0.55rem;">Sample questions</p>
+          <div id="sample-questions" class="sample-list"></div>
+        </div>
+      </section>
+
+      <!-- Side panels -->
+      <aside class="stack-gap">
+        <div class="panel panel-pad">
+          <h2 class="panel-head">Run metrics</h2>
+          <div id="metrics"><p class="empty-soft">No metrics yet.</p></div>
+        </div>
+
+        <div class="panel panel-pad">
+          <h2 class="panel-head">Retrieved sources</h2>
+          <div id="sources" class="sources-list scroll-panel"><p class="empty-soft">No sources.</p></div>
+        </div>
+
+        <div class="panel panel-pad">
+          <h2 class="panel-head">Recent runs</h2>
+          <div id="runs" class="runs-list scroll-panel"><p class="empty-soft">No runs logged yet.</p></div>
+        </div>
+
+        <div class="explainer">
+          <p><strong>OKF:</strong> concept pages with YAML frontmatter and explicit links. Retrieval scores concepts then expands multi-hop neighbors.</p>
+          <p><strong>Vector-like:</strong> BM25 over longer unstructured corpus docs. Free-tier friendly lexical baseline (not dense embeddings).</p>
+          <p><strong>Hybrid:</strong> interleaves OKF concepts and BM25 passages for the same question.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      Created by <a href="https://sabithsb.fermyon.app/" target="_blank" rel="noopener">Sabii</a>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
