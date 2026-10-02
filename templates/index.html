@@ -21,90 +21,14 @@
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/></symbol>
-    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></symbol>
-    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
-    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></symbol>
-    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></symbol>
     <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
-    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
-    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 3.5 12.9 8.6 18 10.5l-5.1 1.9L11 17.5l-1.9-5.1L4 10.5l5.1-1.9Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></symbol>
-    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
-    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
   </svg>
 
   <div class="app" id="app">
-    <aside class="side" id="side" aria-label="Main navigation">
-      <div class="side-head">
-        <div class="brand-slot">
-          <button type="button" class="icon-btn expand-btn" id="expandBtn" aria-label="Expand sidebar">
-            <svg class="i" aria-hidden="true"><use href="#i-panel"/></svg>
-          </button>
-          <a class="brand" href="/" aria-label="{{ app_name }} home">
-            <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-              <rect width="32" height="32" rx="10" fill="#2563EB"/>
-              <path d="M5.5 16c2.7-4.4 6.2-6.6 10.5-6.6S23.8 11.6 26.5 16c-2.7 4.4-6.2 6.6-10.5 6.6S8.2 20.4 5.5 16Z" fill="#fff"/>
-              <circle cx="16" cy="16" r="4.3" fill="#14B8A6"/>
-              <circle cx="16" cy="16" r="1.9" fill="#0B3B8C"/>
-            </svg>
-            <span class="brand-name">{{ app_name }}</span>
-          </a>
-        </div>
-        <button type="button" class="icon-btn collapse-btn" id="collapseBtn" aria-label="Collapse sidebar">
-          <svg class="i" aria-hidden="true"><use href="#i-panel"/></svg>
-        </button>
-      </div>
-
-      <nav class="nav">
-        <div class="nav-group">
-          <p class="nav-label">Workspace</p>
-          <a href="/" aria-current="page">
-            <svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>
-            <span class="lbl">Chat</span>
-          </a>
-          <a class="side-link" href="https://github.com/s4b11/okfbench" target="_blank" rel="noopener">
-            <svg class="i" aria-hidden="true"><use href="#i-ext"/></svg>
-            <span class="lbl">GitHub</span>
-          </a>
-        </div>
-      </nav>
-
-      <div class="side-foot">
-        <button type="button" class="side-link theme-side" id="themeBtnSide" aria-label="Switch theme">
-          <svg class="i theme-ico-sun" aria-hidden="true"><use href="#i-sun"/></svg>
-          <svg class="i theme-ico-moon" aria-hidden="true"><use href="#i-moon"/></svg>
-          <span class="lbl">Theme</span>
-        </button>
-        <a class="account" href="https://sabithsb.fermyon.app/" target="_blank" rel="noopener">
-          <span class="avatar sm t-blue" aria-hidden="true">S</span>
-          <span class="acc-text"><b>Sabii</b><small>Created by</small></span>
-        </a>
-      </div>
-    </aside>
-
-    <div class="scrim" id="scrim"></div>
 
     <main class="main" id="main">
-      <div class="mobilebar">
-        <button type="button" class="icon-btn lg" id="menuBtn" aria-label="Open navigation" aria-expanded="false">
-          <svg class="i" aria-hidden="true"><use href="#i-menu"/></svg>
-        </button>
-        <a class="brand" href="/">
-          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-            <rect width="32" height="32" rx="10" fill="#2563EB"/>
-            <path d="M5.5 16c2.7-4.4 6.2-6.6 10.5-6.6S23.8 11.6 26.5 16c-2.7 4.4-6.2 6.6-10.5 6.6S8.2 20.4 5.5 16Z" fill="#fff"/>
-            <circle cx="16" cy="16" r="4.3" fill="#14B8A6"/>
-            <circle cx="16" cy="16" r="1.9" fill="#0B3B8C"/>
-          </svg>
-          <span>{{ app_name }}</span>
-        </a>
-        <button type="button" class="icon-btn lg" id="themeBtnMobile" aria-label="Switch theme">
-          <svg class="i theme-ico-sun" aria-hidden="true"><use href="#i-sun"/></svg>
-          <svg class="i theme-ico-moon" aria-hidden="true"><use href="#i-moon"/></svg>
-        </button>
-      </div>
 
       <header class="topbar">
         <div class="page-head">

@@ -17,7 +17,6 @@
   const modeMenu = $('mode-menu');
   const modeValue = $('mode-value');
   const modeOptions = Array.from(document.querySelectorAll('[data-mode-option]'));
-  const app = $('app');
 
   function setStatus(text, kind = '') {
     statusEl.textContent = text;
@@ -203,17 +202,9 @@
     document.documentElement.setAttribute('data-theme', next);
     try { localStorage.setItem(themeKey, next); } catch (e) {}
   }
-  ['themeBtn', 'themeBtnSide', 'themeBtnMobile'].forEach((id) => { const el = $(id); if (el) el.addEventListener('click', toggleTheme); });
+  const themeButton = $('themeBtn');
+  if (themeButton) themeButton.addEventListener('click', toggleTheme);
 
-  const collapseBtn = $('collapseBtn');
-  const expandBtn = $('expandBtn');
-  const menuBtn = $('menuBtn');
-  const scrim = $('scrim');
-  if (collapseBtn) collapseBtn.addEventListener('click', () => app.classList.add('collapsed'));
-  if (expandBtn) expandBtn.addEventListener('click', () => app.classList.remove('collapsed'));
-  function setNavOpen(open) { app.classList.toggle('nav-open', open); if (menuBtn) menuBtn.setAttribute('aria-expanded', String(open)); }
-  if (menuBtn) menuBtn.addEventListener('click', () => setNavOpen(!app.classList.contains('nav-open')));
-  if (scrim) scrim.addEventListener('click', () => setNavOpen(false));
 
   loadRuns();
   loadSamples();
