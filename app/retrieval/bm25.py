@@ -109,7 +109,9 @@ class BM25Retriever:
         for score, d in ranked[:k]:
             if score <= 0:
                 continue
-            snippet = d.text[:320].replace("\n", " ").strip()
+            snippet = " ".join(d.text.split())
+            if len(snippet) > 320:
+                snippet = snippet[:320].rsplit(" ", 1)[0] + "..."
             out.append(
                 RetrievedSource(
                     id=d.id,
