@@ -1,7 +1,4 @@
-"""Lexical BM25 retrieval over corpus docs (free-tier friendly vector-like baseline).
-
-Labeled clearly as BM25/lexical, not dense embeddings. Default works offline with no API keys.
-"""
+"""BM25 keyword search over corpus documents."""
 from __future__ import annotations
 
 import math
@@ -67,10 +64,9 @@ class BM25Index:
         return s
 
 
-class VectorRAGRetriever:
-    """BM25/lexical retriever presented as the vector-RAG baseline for free deploy."""
+class BM25Retriever:
 
-    label = "BM25 lexical (vector-like baseline)"
+    label = "BM25 keyword search"
 
     def __init__(self, corpus_dir: Path | None = None):
         self.corpus_dir = corpus_dir or (KNOWLEDGE_DIR / "corpus")
@@ -93,14 +89,11 @@ class VectorRAGRetriever:
                     id=path.stem,
                     title=title,
                     text=text,
-                    path=str(path),
+                    path="corpus/" + path.name,
                     tokens=tokenize(title + " " + text),
                 )
                 self.docs.append(doc)
         self.index = BM25Index(self.docs)
-
-    def reload(self) -> None:
-        self._load()
 
     def retrieve(self, question: str, top_k: int | None = None) -> list[RetrievedSource]:
         k = top_k or get_settings().top_k

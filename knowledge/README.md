@@ -1,11 +1,8 @@
-# Infant Guard demo knowledge (fictional)
+# Demo knowledge
 
-Original demo writing for an open-source retrieval benchmark.
+Infant Guard and K Brother Children's Hospital are fictional. These files describe sample product workflows, not clinical advice or implemented OKFBench features.
 
-- Product: **Infant Guard** (fictional)
-- Setting: **K Brother Children's Hospital** (fictional)
-- `okf/` — short concept pages with YAML frontmatter and `links`
-- `corpus/` — longer unstructured mirrors for BM25
+- `okf/`: concept pages with YAML metadata and Markdown links.
+- `corpus/`: longer documents for BM25 keyword search.
 
-This is **not** clinical advice and is **not** a university project report.
-Do not add student identifiers, marks, submission pages, or verbatim report text here.
+The two versions cover the same domain but are not fact-identical. Use them to inspect retrieval behavior, not to claim a controlled accuracy benchmark.

@@ -1,7 +1,7 @@
 """Database engine and session helpers."""
 from collections.abc import Generator
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
@@ -14,13 +14,6 @@ engine = create_engine(
     connect_args=_connect_args,
     pool_pre_ping=True,
 )
-
-if _settings.is_sqlite:
-    @event.listens_for(engine, "connect")
-    def _sqlite_fk(dbapi_conn, _):
-        cursor = dbapi_conn.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
 
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 

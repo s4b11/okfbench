@@ -1,4 +1,4 @@
-"""LLM client: Groq (primary) or OpenAI (secondary), with deterministic stub fallback."""
+"""Groq or OpenAI answers, with an offline preview."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -17,6 +17,7 @@ class LLMResult:
 SYSTEM_PROMPT = (
     "You are OKFBench Chat, a careful demo assistant. Answer using ONLY the provided "
     "context. If the context is incomplete, say what is missing. Be concise. "
+    "Use plain text with short paragraphs or bullet points, without Markdown headings or bold. "
     "Cite concept or doc ids in brackets like [concept-id] when you use them. "
     "Do not invent product features that are not in the context. "
     "This is a portfolio demo about Infant Guard software documentation, not clinical advice."
@@ -42,22 +43,15 @@ def _stub_answer(question: str, context: str, mode: str) -> LLMResult:
         bullets = lines[:3]
     joined = "; ".join(bullets[:4])
     text = (
-        f"(stub mode, no API key) Based on {mode} retrieval, relevant material includes: "
+        f"Offline preview. Based on {mode} retrieval, relevant material includes: "
         f"{joined}. Set GROQ_API_KEY for a full generative answer. Question: {question}"
     )
-    approx = max(1, len(question.split()) + len(context.split()) // 4)
-    return LLMResult(
-        text=text,
-        prompt_tokens=approx,
-        completion_tokens=len(text.split()),
-        provider="stub",
-    )
+    return LLMResult(text=text)
 
 
 def _chat_openai_compatible(base_url: str, api_key: str, model: str, question: str, context: str) -> LLMResult:
     from openai import OpenAI
 
-    client = OpenAI(api_key=api_key, base_url=base_url)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {
@@ -65,7 +59,8 @@ def _chat_openai_compatible(base_url: str, api_key: str, model: str, question: s
             "content": f"Mode context follows.\n\n{context}\n\nQuestion: {question}",
         },
     ]
-    resp = client.chat.completions.create(model=model, messages=messages, temperature=0.2)
+    with OpenAI(api_key=api_key, base_url=base_url, timeout=45, max_retries=1) as client:
+        resp = client.chat.completions.create(model=model, messages=messages, temperature=0.2)
     choice = resp.choices[0].message.content or ""
     usage = getattr(resp, "usage", None)
     pt = int(getattr(usage, "prompt_tokens", 0) or 0)
@@ -75,6 +70,8 @@ def _chat_openai_compatible(base_url: str, api_key: str, model: str, question: s
 
 def generate_answer(question: str, context: str, mode: str) -> LLMResult:
     settings = get_settings()
+    if not context.strip():
+        return LLMResult(text="No matching sources were found. Try a question about Infant Guard.", provider="none")
     if settings.use_stub_llm:
         return _stub_answer(question, context, mode)
 

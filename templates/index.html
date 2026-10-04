@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OKFbench</title>
+  <title>{{ app_name }}</title>
+  <link rel="icon" href="/static/letter-s.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/styles.css" />
-  <link rel="icon" href="/static/letter-s.png" />
   <script>
     (function () {
       try {
@@ -53,28 +53,14 @@
             <div class="panel panel-pad">
               <div class="controls-row">
                 <div class="mode-field flex-1">
-                  <span class="field-label" id="mode-label">Retrieval mode</span>
-                  <input type="hidden" id="mode" value="okf" />
-                  <div class="mode-select">
-                    <button
-                      type="button"
-                      id="mode-toggle"
-                      class="mode-toggle"
-                      aria-haspopup="listbox"
-                      aria-expanded="false"
-                      aria-labelledby="mode-label mode-value"
-                    >
-                      <span id="mode-value">OKF (concepts + multi-hop links)</span>
-                      <svg class="i chev" aria-hidden="true"><use href="#i-chev-down"/></svg>
-                    </button>
-                    <div id="mode-menu" class="mode-menu" role="listbox" aria-labelledby="mode-label" hidden>
-                      <button type="button" class="mode-option" role="option" data-mode-option="okf" aria-selected="true">OKF (concepts + multi-hop links)</button>
-                      <button type="button" class="mode-option" role="option" data-mode-option="vector" aria-selected="false">Vector-like (BM25 lexical corpus)</button>
-                      <button type="button" class="mode-option" role="option" data-mode-option="hybrid" aria-selected="false">Hybrid (OKF + BM25)</button>
-                    </div>
-                  </div>
+                  <label class="field-label" for="mode">Retrieval mode</label>
+                  <select id="mode" class="mode-toggle">
+                    <option value="okf">OKF linked concepts</option>
+                    <option value="bm25">BM25 keyword search</option>
+                    <option value="hybrid">Hybrid (OKF + BM25)</option>
+                  </select>
                 </div>
-                <button type="button" id="clear-chat" class="btn secondary sm">Clear session</button>
+                <button type="button" id="clear-chat" class="btn secondary sm">New session</button>
               </div>
               <p class="hint">
                 Ask the same question in each mode and compare latency, sources, and answer grounding.
@@ -89,16 +75,19 @@
                 class="input-q"
                 type="text"
                 autocomplete="off"
+                maxlength="4000"
+                aria-label="Question about Infant Guard"
+                required
                 placeholder="Ask about Infant Guard modules, vaccines, nutrition, risk alerts..."
               />
               <button type="submit" class="btn primary">Ask</button>
             </form>
             <p id="status" class="status-line">Ready</p>
 
-            <div>
-              <p class="section-label">Sample questions</p>
+            <details>
+              <summary class="section-label">Try a sample question</summary>
               <div id="sample-questions" class="sample-list"></div>
-            </div>
+            </details>
           </section>
 
           <aside class="stack-gap">
@@ -113,14 +102,15 @@
             </div>
 
             <div class="panel panel-pad">
-              <h2 class="panel-head">Recent runs</h2>
+              <h2 class="panel-head">Your recent runs</h2>
               <div id="runs" class="runs-list scroll-panel"><p class="empty-soft">No runs logged yet.</p></div>
             </div>
 
             <div class="explainer">
-              <p><strong>OKF:</strong> concept pages with YAML frontmatter and explicit links. Retrieval scores concepts then expands multi-hop neighbors.</p>
-              <p><strong>Vector-like:</strong> BM25 over longer unstructured corpus docs. Free-tier friendly lexical baseline (not dense embeddings).</p>
-              <p><strong>Hybrid:</strong> interleaves OKF concepts and BM25 passages for the same question.</p>
+              <p><strong>OKF:</strong> concept pages with YAML frontmatter and Markdown links. Search finds concepts, then follows their links.</p>
+              <p><strong>BM25:</strong> keyword search over corpus documents. Dense vector retrieval is not implemented.</p>
+              <p><strong>Hybrid:</strong> interleaves OKF concepts and BM25 documents for the same question.</p>
+              <p>OKF is a knowledge format that can also support vector RAG. These runs are examples, not an accuracy benchmark.</p>
             </div>
           </aside>
         </div>

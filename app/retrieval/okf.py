@@ -1,9 +1,9 @@
-"""OKF retrieval: concept pages with YAML frontmatter and multi-hop links."""
-from __future__ import annotations
-
+"""Search concept pages and follow their Markdown links."""
 import re
+from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 import yaml
 
@@ -27,134 +27,78 @@ class RetrievedSource:
     title: str
     snippet: str
     score: float
-    kind: str  # concept | hop | doc
+    kind: str
     hops: int = 0
     path: str = ""
 
 
-_FRONTMATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n(.*)$", re.DOTALL)
-
-
 class OKFRetriever:
     def __init__(self, okf_dir: Path | None = None):
-        self.okf_dir = okf_dir or (KNOWLEDGE_DIR / "okf")
+        self.okf_dir = (okf_dir or KNOWLEDGE_DIR / "okf").resolve()
         self.concepts: dict[str, Concept] = {}
-        self._load()
-
-    def _load(self) -> None:
-        self.concepts.clear()
-        if not self.okf_dir.exists():
-            return
-        for path in sorted(self.okf_dir.glob("*.md")):
+        for path in sorted(self.okf_dir.rglob("*.md")):
+            if path.name in {"index.md", "log.md"}:
+                continue
             text = path.read_text(encoding="utf-8")
-            meta, body = {}, text
-            m = _FRONTMATTER.match(text)
-            if m:
-                meta = yaml.safe_load(m.group(1)) or {}
-                body = m.group(2).strip()
-            cid = str(meta.get("id") or path.stem)
-            concept = Concept(
+            match = re.match(r"^---\s*\n(.*?)\n---\s*\n(.*)$", text, re.DOTALL)
+            meta = yaml.safe_load(match[1]) if match else None
+            if not isinstance(meta, dict) or not isinstance(meta.get("type"), str) or not meta["type"].strip():
+                raise ValueError(f"{path.name}: YAML frontmatter needs a type")
+            body = match[2].strip()
+            links = []
+            for href in re.findall(r"(?<!!)\[[^\]]*\]\(([^)]+)\)", body):
+                url = urlsplit(href)
+                if url.scheme or url.netloc or not url.path.endswith(".md"):
+                    continue
+                target = unquote(url.path)
+                target = self.okf_dir / target.lstrip("/") if target.startswith("/") else path.parent / target
+                try:
+                    links.append(target.resolve().relative_to(self.okf_dir).with_suffix("").as_posix())
+                except ValueError:
+                    continue
+            cid = path.relative_to(self.okf_dir).with_suffix("").as_posix()
+            self.concepts[cid] = Concept(
                 id=cid,
-                title=str(meta.get("title") or cid.replace("-", " ").title()),
-                summary=str(meta.get("summary") or ""),
+                title=meta.get("title", path.stem.replace("-", " ").title()),
+                summary=meta.get("description", ""),
                 body=body,
-                links=[str(x) for x in (meta.get("links") or [])],
-                tags=[str(x) for x in (meta.get("tags") or [])],
-                path=str(path.relative_to(path.parents[2]) if len(path.parts) > 2 else path),
+                links=links,
+                tags=meta.get("tags", []),
+                path="okf/" + path.relative_to(self.okf_dir).as_posix(),
             )
-            self.concepts[cid] = concept
-
-    def reload(self) -> None:
-        self._load()
 
     def _score(self, concept: Concept, tokens: set[str]) -> float:
-        if not tokens:
-            return 0.0
-        blob = " ".join(
-            [concept.id.replace("-", " "), concept.title, concept.summary, " ".join(concept.tags), concept.body]
-        ).lower()
-        words = set(re.findall(r"[a-z0-9]+", blob))
-        hit = len(tokens & words)
-        title_words = set(re.findall(r"[a-z0-9]+", (concept.id + " " + concept.title).lower()))
-        title_hit = len(tokens & title_words)
-        summary_bonus = 1.5 if concept.summary and any(t in concept.summary.lower() for t in tokens) else 0.0
-        return hit + title_hit * 2.5 + summary_bonus
+        words = set(re.findall(r"[a-z0-9]+", (concept.title + " " + concept.summary + " " + concept.body).lower()))
+        title = set(re.findall(r"[a-z0-9]+", concept.title.lower()))
+        return len(tokens & words) + 2.5 * len(tokens & title)
 
     def retrieve(self, question: str, top_k: int | None = None) -> list[RetrievedSource]:
         settings = get_settings()
         k = top_k or settings.top_k
-        depth = settings.okf_hop_depth
         tokens = set(re.findall(r"[a-z0-9]+", question.lower()))
-        stop = {"the", "a", "an", "is", "are", "what", "how", "why", "do", "does", "in", "of", "to", "for", "and", "or"}
-        tokens -= stop
-
-        scored: list[tuple[float, Concept]] = []
-        for c in self.concepts.values():
-            s = self._score(c, tokens)
-            if s > 0:
-                scored.append((s, c))
-        scored.sort(key=lambda x: x[0], reverse=True)
-        seeds = scored[: max(k, 3)]
-
-        results: list[RetrievedSource] = []
-        seen: set[str] = set()
-
-        for score, c in seeds[:k]:
-            seen.add(c.id)
-            results.append(
-                RetrievedSource(
-                    id=c.id,
-                    title=c.title,
-                    snippet=(c.summary or c.body[:280]).strip(),
-                    score=round(score, 3),
-                    kind="concept",
-                    hops=0,
-                    path=c.path,
-                )
-            )
-
-        frontier = [c.id for _, c in seeds]
-        for hop in range(1, depth + 1):
-            nxt: list[str] = []
-            for cid in frontier:
-                concept = self.concepts.get(cid)
-                if not concept:
-                    continue
-                for link in concept.links:
-                    if link in seen or link not in self.concepts:
-                        continue
-                    linked = self.concepts[link]
-                    seen.add(link)
-                    nxt.append(link)
-                    results.append(
-                        RetrievedSource(
-                            id=linked.id,
-                            title=linked.title,
-                            snippet=(linked.summary or linked.body[:280]).strip(),
-                            score=round(0.5 / hop, 3),
-                            kind="hop",
-                            hops=hop,
-                            path=linked.path,
-                        )
-                    )
-            frontier = nxt
-            if len(results) >= k + depth * 3:
-                break
-
-        return results[: k + depth * 2]
+        tokens -= {"the", "a", "an", "is", "are", "what", "how", "why", "do", "does", "in", "of", "to", "for", "and", "or"}
+        ranked = sorted(((self._score(c, tokens), c.id) for c in self.concepts.values()), reverse=True)
+        ranked = [(score, cid) for score, cid in ranked if score > 0]
+        seed_count = min(2, k) if settings.okf_hop_depth else k
+        queue = deque((cid, score, 0) for score, cid in ranked[:seed_count])
+        results, seen = [], set()
+        while queue and len(results) < k:
+            cid, score, hop = queue.popleft()
+            if cid in seen or cid not in self.concepts:
+                continue
+            seen.add(cid)
+            concept = self.concepts[cid]
+            results.append(RetrievedSource(
+                id=cid, title=concept.title, snippet=concept.summary or concept.body[:280],
+                score=round(score, 3), kind="hop" if hop else "concept", hops=hop, path=concept.path,
+            ))
+            if hop < settings.okf_hop_depth:
+                queue.extend((link, 0.5 / (hop + 1), hop + 1) for link in concept.links)
+        return results
 
     def context_block(self, sources: list[RetrievedSource]) -> str:
         parts = []
-        for s in sources:
-            c = self.concepts.get(s.id)
-            if not c:
-                continue
-            hop = f" (hop={s.hops})" if s.hops else ""
-            links = ", ".join(c.links) if c.links else "none"
-            parts.append(
-                f"### {c.title} [{c.id}]{hop}\n"
-                f"Summary: {c.summary}\n"
-                f"Links: {links}\n"
-                f"{c.body.strip()}\n"
-            )
+        for source in sources:
+            concept = self.concepts[source.id]
+            parts.append(f"### {concept.title} [{concept.id}]\n{concept.summary}\n{concept.body}\n")
         return "\n".join(parts)

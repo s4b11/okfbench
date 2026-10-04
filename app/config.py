@@ -2,6 +2,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,11 +16,19 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{(BASE_DIR / 'okfbench.db').as_posix()}"
     groq_api_key: str = ""
     openai_api_key: str = ""
-    llm_model: str = "openai/gpt-oss-20b"
+    llm_model: str = ""
     llm_stub: bool = False
-    top_k: int = 5
-    okf_hop_depth: int = 2
+    top_k: int = Field(5, ge=1, le=20)
+    okf_hop_depth: int = Field(2, ge=0, le=3)
     cors_origins: str = "*"
+
+    @field_validator("database_url")
+    @classmethod
+    def postgres_driver(cls, value: str) -> str:
+        for prefix in ("postgres://", "postgresql://"):
+            if value.startswith(prefix):
+                return value.replace(prefix, "postgresql+psycopg://", 1)
+        return value
 
     @property
     def use_stub_llm(self) -> bool:

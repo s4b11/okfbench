@@ -1,13 +1,10 @@
 ---
-id: tech-stack
-title: "Technology Stack"
-summary: "HTML/CSS/JS front end, Python web backend, relational database, SMTP-style email notices."
-links:
-  - three-tier-architecture
-  - security-privacy
-  - alerts-notifications
+type: Concept
+title: Technology Stack
+description: HTML/CSS/JS front end, Python web backend, relational database, SMTP-style
+  email notices.
 tags:
-  - tech
+- tech
 ---
 
 **Front end:** HTML, CSS, JavaScript, responsive components.
@@ -19,3 +16,9 @@ tags:
 **Notices:** SMTP-style email path for confirmations and reminders.
 
 Demo hardening includes authentication, role checks, input validation, and HTTPS in deployed environments.
+
+## Related concepts
+
+- [Three Tier Architecture](three-tier-architecture.md)
+- [Security Privacy](security-privacy.md)
+- [Alerts Notifications](alerts-notifications.md)

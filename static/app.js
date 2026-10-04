@@ -12,11 +12,7 @@
   const sourcesEl = $('sources');
   const runsEl = $('runs');
   const sampleEl = $('sample-questions');
-  const modeSelect = document.querySelector('.mode-select');
-  const modeToggle = $('mode-toggle');
-  const modeMenu = $('mode-menu');
-  const modeValue = $('mode-value');
-  const modeOptions = Array.from(document.querySelectorAll('[data-mode-option]'));
+  let busy = false;
 
   function setStatus(text, kind = '') {
     statusEl.textContent = text;
@@ -37,38 +33,6 @@
       wrap.appendChild(m);
     }
     messagesEl.appendChild(wrap);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  async function addTypingBubble(text, meta) {
-    const wrap = document.createElement('div');
-    wrap.className = 'msg-row assistant';
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble bubble-assistant';
-    bubble.setAttribute('aria-label', 'Assistant response');
-    const textNode = document.createTextNode('');
-    const caret = document.createElement('span');
-    caret.className = 'typing-caret';
-    caret.setAttribute('aria-hidden', 'true');
-    bubble.appendChild(textNode);
-    bubble.appendChild(caret);
-    wrap.appendChild(bubble);
-    messagesEl.appendChild(wrap);
-    const tokens = String(text == null ? '' : text).match(/\S+\s*/g) || [];
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const delay = reducedMotion ? 0 : Math.min(24, Math.max(8, 7000 / Math.max(tokens.length, 1)));
-    for (const token of tokens) {
-      if (delay) await new Promise((r) => setTimeout(r, delay));
-      textNode.data += token;
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-    caret.remove();
-    if (meta) {
-      const m = document.createElement('div');
-      m.className = 'msg-meta';
-      m.textContent = meta;
-      wrap.appendChild(m);
-    }
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
@@ -102,8 +66,10 @@
   }
 
   async function loadRuns() {
+    if (!sessionId) { runsEl.innerHTML = '<p class="empty-soft">No runs in this session.</p>'; return; }
     try {
-      const res = await fetch('/api/runs?limit=12');
+      const res = await fetch('/api/runs?limit=12&session_id=' + encodeURIComponent(sessionId));
+      if (!res.ok) throw new Error('Could not load runs');
       const data = await res.json();
       const runs = data.runs || [];
       if (!runs.length) { runsEl.innerHTML = '<p class="empty-soft">No runs logged yet.</p>'; return; }
@@ -130,39 +96,13 @@
     } catch (e) { sampleEl.innerHTML = '<p class="empty-soft">Sample questions unavailable.</p>'; }
   }
 
-  function setModeMenuOpen(isOpen) {
-    modeSelect.classList.toggle('is-open', isOpen);
-    modeToggle.setAttribute('aria-expanded', String(isOpen));
-    if (modeMenu) modeMenu.hidden = !isOpen;
-  }
-  function setMode(value) {
-    const option = modeOptions.find((item) => item.dataset.modeOption === value);
-    if (!option) return;
-    modeEl.value = value;
-    modeValue.textContent = option.textContent;
-    modeOptions.forEach((item) => item.setAttribute('aria-selected', String(item === option)));
-  }
-
-  modeToggle.addEventListener('click', () => setModeMenuOpen(!modeSelect.classList.contains('is-open')));
-  modeOptions.forEach((option) => {
-    option.addEventListener('click', () => { setMode(option.dataset.modeOption); setModeMenuOpen(false); modeToggle.focus(); });
-  });
-  modeToggle.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape') { setModeMenuOpen(false); return; }
-    if (ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setModeMenuOpen(true); modeOptions[0]?.focus(); }
-  });
-  modeMenu.addEventListener('keydown', (ev) => {
-    const currentIndex = modeOptions.indexOf(document.activeElement);
-    if (ev.key === 'Escape') { setModeMenuOpen(false); modeToggle.focus(); }
-    else if (ev.key === 'ArrowDown') { ev.preventDefault(); modeOptions[(currentIndex + 1) % modeOptions.length].focus(); }
-    else if (ev.key === 'ArrowUp') { ev.preventDefault(); modeOptions[(currentIndex - 1 + modeOptions.length) % modeOptions.length].focus(); }
-  });
-  document.addEventListener('click', (ev) => { if (!modeSelect.contains(ev.target)) setModeMenuOpen(false); });
-
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const question = input.value.trim();
-    if (!question) return;
+    if (!question || busy) return;
+    busy = true;
+    form.querySelector('button').disabled = true;
+    $('clear-chat').disabled = true;
     const mode = modeEl.value;
     addBubble('user', question);
     input.value = '';
@@ -176,8 +116,7 @@
       const data = await res.json();
       sessionId = data.session_id;
       localStorage.setItem(sessionKey, sessionId);
-      setStatus('Typing answer...');
-      await addTypingBubble(data.answer, data.retrieval_label + ' | run #' + data.run_id);
+      addBubble('assistant', data.answer, data.retrieval_label + ' | run #' + data.run_id);
       renderMetrics(data.metrics, data.retrieval_label, data.llm_provider);
       renderSources(data.sources);
       setStatus('Done in ' + data.metrics.latency_ms + ' ms');
@@ -185,6 +124,10 @@
     } catch (e) {
       setStatus(String(e.message || e), 'err');
       addBubble('assistant', 'Request failed: ' + (e.message || e));
+    } finally {
+      busy = false;
+      form.querySelector('button').disabled = false;
+      $('clear-chat').disabled = false;
     }
   });
 
@@ -194,7 +137,8 @@
     localStorage.removeItem(sessionKey);
     renderMetrics(null);
     renderSources([]);
-    setStatus('Session cleared');
+    loadRuns();
+    setStatus('New session ready');
   });
 
   function toggleTheme() {

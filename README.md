@@ -1,153 +1,72 @@
 # OKFBench Chat
 
-Open-source demo chatbot that compares **OKF concept retrieval** (structured concepts + multi-hop links) with a **BM25 lexical / vector-like corpus RAG** baseline, plus a **hybrid** mode.
+A small demo for exploring how knowledge structure changes retrieval.
 
-**Domain:** Fictional Infant Guard newborn-care demo set at K Brother Children's Hospital. Knowledge is original demo writing for open-source retrieval comparison.
+[Live demo](https://okfbench-chat.onrender.com/) · [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
 
-**Stack:** FastAPI, SQLAlchemy, PostgreSQL or SQLite, Tailwind CDN UI, optional Groq LLM (primary; OpenAI secondary)
+| Mode | What it does |
+| --- | --- |
+| OKF | Finds relevant concept pages, then follows their Markdown links. |
+| BM25 | Ranks corpus documents by keyword relevance. |
+| Hybrid | Alternates OKF and BM25 results. |
 
-> Not medical advice. Not a university report. Do not commit private project reports or verbatim extracts. Demo knowledge is a portfolio showcase written as fictional portfolio content, not a clinical source of truth.
+All modes use the same source limit and answer model. The app shows retrieved evidence, retrieval and generation time, and provider-reported token usage. Timings exclude database writes and browser rendering.
 
-## Why this demo
+**Dense embeddings are not implemented.** OKF is a knowledge format, while RAG is a retrieval-and-generation pipeline. OKF content can also be used with vector search. This project explores those ideas; it does not establish an accuracy or performance winner.
 
-| Mode | What it retrieves | Good for |
-|------|-------------------|----------|
-| **OKF** | Concept `.md` files with YAML `id`, `summary`, `links`, `tags` then multi-hop link expansion | Multi-hop questions ("how nutrition connects to alerts") |
-| **Vector-like (BM25)** | Longer unstructured docs in `knowledge/corpus/` | Fuzzy keyword overlap over narrative text |
-| **Hybrid** | Interleaved OKF + BM25 hits | Side-by-side grounding in one answer |
+The dataset describes **Infant Guard**, a fictional newborn-care product. It is sample documentation, not an implemented medical system. The concept and corpus versions cover the same domain but are not fact-identical.
 
-Dense embeddings (sentence-transformers) and MCP tooling are **deferred** so the app stays light enough for a free Render web service. See [Future work](#future-work).
+## Run locally
 
-## Quick start (local)
+Python 3.12+:
 
 ```bash
-cd chatbot
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload --port 8000
 ```
 
-Open http://127.0.0.1:8000
-
-- **No API keys required** for UI browsing, retrieval, and deterministic stub answers.
-- Set `GROQ_API_KEY` in `.env` for live generative answers; Groq is the primary LLM path.
-- `OPENAI_API_KEY` is optional and used as a secondary path only when no Groq key is set.
-
-### Postgres locally (optional)
+Activate the environment (`.venv\Scripts\Activate.ps1` on Windows, `source .venv/bin/activate` on macOS/Linux), then:
 
 ```bash
-# .env
-DATABASE_URL=postgresql+psycopg://USER:PASSWORD@localhost:5432/okfbench
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
+
+Open http://127.0.0.1:8000. SQLite and an offline retrieval preview work without API keys.
+
+For generated answers, copy `.env.example` to `.env` and set `GROQ_API_KEY` or `OPENAI_API_KEY`. Groq is used when both are set. `LLM_MODEL` is an optional override; defaults are `openai/gpt-oss-20b` for Groq and `gpt-4o-mini` for OpenAI. `LLM_STUB=true` forces the offline preview, which reports zero LLM tokens.
+
+## Try a comparison
+
+Ask **“How does an approved nutrition plan reach parents?”** in each mode. Inspect the citations and retrieved sources before comparing the timings. Scores are local to each retriever and are not confidence estimates. The app sends each question independently; it does not use earlier messages as context.
+
+`TOP_K` limits the total sources per run (default 5). The OKF path starts with up to two keyword-ranked concepts and follows links up to `OKF_HOP_DEPTH` (default 2), stopping at that source limit. Hybrid alternates the two result lists; it is not a learned reranker.
+
+## Files
+
+- `app/retrieval/`: OKF traversal, BM25, and hybrid.
+- `app/routers/chat.py`: chat requests and session run history.
+- `app/services/llm.py`: Groq/OpenAI calls and offline preview.
+- `knowledge/`: 24 concept pages and 12 corpus documents.
+- `static/`, `templates/`: plain JavaScript, CSS, and HTML.
+- `tests/`: retrieval and API regression checks.
+
+The concept bundle uses YAML `type`, `title`, and `description`, plus Markdown links. Its IDs come from file paths. The small loader handles this bundle's local links; it is not a general OKF validation tool. See the [OKF specification](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md).
 
 ## API
 
-| Method | Path | Notes |
-|--------|------|-------|
-| GET | `/` | Chat UI |
-| GET | `/health` | Liveness + llm/db mode |
-| POST | `/api/chat` | `{ "question", "mode": "vector\|okf\|hybrid", "session_id?" }` |
-| GET | `/api/runs` | Recent metrics (`limit`, optional `mode`, `session_id`) |
-| POST | `/api/reload-knowledge` | Reload OKF + corpus from disk |
+- `GET /health`: app and provider configuration status.
+- `POST /api/chat`: `{ "question": "...", "mode": "okf" }`; modes are `okf`, `bm25`, and `hybrid`.
+- `GET /api/runs?session_id=...`: recent runs for that session.
 
-Each chat run stores latency, retrieval time, LLM time, token counts (when the provider returns them), and retrieved sources in the database.
+The chat response contains a random session ID. The browser saves it locally; **New session** starts fresh but does not delete database records. Session IDs are bearer identifiers, not user accounts. API details are at `/docs`. The former `vector` mode is now named `bm25`.
 
-## Project layout
+## Check and deploy
 
-```
-chatbot/
-  app/
-    main.py
-    config.py
-    db.py
-    models.py
-    routers/          # health, chat
-    retrieval/        # okf, vector_rag (BM25), hybrid
-    services/         # llm, metrics
-  knowledge/
-    okf/              # Infant Guard concept pages
-    corpus/           # parallel unstructured docs
-  eval/sample_questions.json
-  templates/index.html
-  static/
-  requirements.txt
-  render.yaml
-  .env.example
+```bash
+pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v
 ```
 
-## Deploy on Render (free)
+`render.yaml` deploys the app with Postgres. Set the provider key in Render, and use the database connection URL supplied by Render. SQLite remains the local default. Restart the app after editing knowledge files.
 
-1. Push this repo to GitHub.
-2. On Render, create a **PostgreSQL** database (free plan).
-3. Create a **Web Service** from the repo (or use Blueprint with `render.yaml`).
-4. Build: `pip install -r requirements.txt`
-5. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-6. Set env vars:
-   - `DATABASE_URL` from the Render Postgres connection string. If Render gives `postgres://`, change the scheme to `postgresql+psycopg://` for SQLAlchemy + psycopg3.
-   - Optional: `GROQ_API_KEY` (primary LLM), `LLM_MODEL=openai/gpt-oss-20b`
-7. Deploy. Open the service URL.
-
-`render.yaml` is a starting Blueprint; free plans and connection string formats can change, so verify in the Render dashboard.
-
-## How OKF vs BM25 works here
-
-**OKF (Open Knowledge Fragments style):** each concept is a short markdown page with frontmatter:
-
-```yaml
----
-id: ai-nutrition-planning
-title: AI-Powered Nutrition Planning
-summary: ...
-links:
-  - nutrition-plan-module
-  - alerts-notifications
-tags:
-  - ai
-  - nutrition
----
-```
-
-Retrieval token-overlaps the question against concept text, ranks seed concepts, then walks `links` up to `OKF_HOP_DEPTH` (default 2). Hopped concepts are labeled in the UI.
-
-**BM25 corpus RAG:** `knowledge/corpus/*.md` holds longer narrative mirrors of the same facts. Okapi BM25 ranks passages. This is intentionally a **lexical / vector-like baseline**, not dense embedding search, so free hosting stays feasible without heavyweight model downloads.
-
-**Hybrid:** merges top OKF and BM25 hits for one context block.
-
-## Environment variables
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `DATABASE_URL` | SQLite file under project root | Postgres or SQLite URL |
-| `GROQ_API_KEY` | empty | Primary live LLM via Groq |
-| `OPENAI_API_KEY` | empty | Optional secondary LLM path, used when Groq is unavailable |
-| `LLM_MODEL` | `openai/gpt-oss-20b` | Groq chat model id |
-| `LLM_STUB` | false | Force deterministic stub answers |
-| `TOP_K` | 5 | Retrieval depth |
-| `OKF_HOP_DEPTH` | 2 | OKF link expansion |
-| `APP_NAME` | OKFBench Chat | UI title |
-| `CORS_ORIGINS` | `*` | Comma-separated origins |
-
-## Sample knowledge
-
-~24 Infant Guard OKF concepts covering overview, modules, AI nutrition (doctor approval), malnutrition risk thresholds, vaccination to age 5, three-tier architecture, dashboards, security, and roadmap. Twelve corpus documents expand the same facts as unstructured prose for BM25 comparison. Content is written as fictional demo content; do not treat it as clinical guidance.
-
-Try questions in `eval/sample_questions.json` (also loaded in the UI).
-
-## Future work
-
-- Optional dense embeddings (sentence-transformers or API embeddings) behind an env flag
-- MCP tools for knowledge browsing / eval harnesses
-- Side-by-side dual-pane UI that fires OKF and BM25 in parallel for one question
-- Export run metrics to CSV for blog / portfolio writeups
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+MIT licensed. Created by [Sabii](https://sabithsb.fermyon.app/).

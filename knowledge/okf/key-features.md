@@ -1,16 +1,10 @@
 ---
-id: key-features
-title: "Key Product Features"
-summary: "Shared records, alerts, reviewed nutrition suggestions, growth risk flags, immunization schedules to age five, visits, and downloadable summaries."
-links:
-  - centralized-health-records
-  - alerts-notifications
-  - ai-nutrition-planning
-  - malnutrition-risk-analysis
-  - vaccination-scheduling
-  - appointment-scheduling
+type: Concept
+title: Key Product Features
+description: Shared records, alerts, reviewed nutrition suggestions, growth risk flags,
+  immunization schedules to age five, visits, and downloadable summaries.
 tags:
-  - features
+- features
 ---
 
 Feature set for the Infant Guard demo:
@@ -22,3 +16,12 @@ Feature set for the Infant Guard demo:
 - **Immunization scheduling** — from birth through age **five**, with early reminders.
 - **Visit booking** — parents request visits; clinicians manage availability and confirmations.
 - **Care summaries** — staff can publish digital summaries parents can download.
+
+## Related concepts
+
+- [Centralized Health Records](centralized-health-records.md)
+- [Alerts Notifications](alerts-notifications.md)
+- [Ai Nutrition Planning](ai-nutrition-planning.md)
+- [Malnutrition Risk Analysis](malnutrition-risk-analysis.md)
+- [Vaccination Scheduling](vaccination-scheduling.md)
+- [Appointment Scheduling](appointment-scheduling.md)

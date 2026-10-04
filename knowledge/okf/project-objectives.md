@@ -1,15 +1,11 @@
 ---
-id: project-objectives
-title: "Demo Product Goals"
-summary: "Centralize newborn records, support role-based access, clinician-reviewed nutrition suggestions, alerts, visits, and growth risk flags."
-links:
-  - infant-guard-overview
-  - ai-nutrition-planning
-  - malnutrition-risk-analysis
-  - alerts-notifications
+type: Concept
+title: Demo Product Goals
+description: Centralize newborn records, support role-based access, clinician-reviewed
+  nutrition suggestions, alerts, visits, and growth risk flags.
 tags:
-  - objectives
-  - demo
+- objectives
+- demo
 ---
 
 Infant Guard's demo goals:
@@ -22,3 +18,10 @@ Infant Guard's demo goals:
 - Make visit booking and reminders straightforward.
 - Flag possible growth or nutrition concerns early for clinician follow-up.
 - Improve day-to-day coordination between clinic staff and families.
+
+## Related concepts
+
+- [Infant Guard Overview](infant-guard-overview.md)
+- [Ai Nutrition Planning](ai-nutrition-planning.md)
+- [Malnutrition Risk Analysis](malnutrition-risk-analysis.md)
+- [Alerts Notifications](alerts-notifications.md)

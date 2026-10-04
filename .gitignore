@@ -18,3 +18,7 @@ build/
 .DS_Store
 
 eval/last_runs.json
+gemini_key.txt
+key.txt
+promo/
+tasks/
